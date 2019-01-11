@@ -1,6 +1,7 @@
-type VNodeType = VNode | Number | Text;
-type Attributes = { [s: string]: string | Function };
-
+export type VNodeType = VNode | Number | Text;
+export type Attributes = { [s: string]: AttrValue };
+export type AttrValue = string | boolean | Function;
+export type AttrName = string;
 /**
  * Virtual DOM
  */
@@ -19,7 +20,7 @@ export interface VNode {
  */
 export default function h(
   type: keyof ElementTagNameMap,
-  attributes: Attributes,
+  attributes: Attributes = {},
   ...children: VNodeType[]
 ): VNode {
   return {
