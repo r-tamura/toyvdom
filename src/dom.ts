@@ -52,7 +52,7 @@ function updateElement(
 
   if (isVNode(oldNode) && isVNode(newNode)) {
     updateProps($target, newNode.attributes, oldNode.attributes);
-    const length = Math.min(oldNode.children.length, newNode.children.length);
+    const length = Math.max(oldNode.children.length, newNode.children.length);
     for (let i = 0; i < length; i++) {
       updateElement($target, oldNode.children[i], newNode.children[i], i);
     }
