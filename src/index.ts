@@ -1,2 +1,3 @@
 import h from "./h";
-export { h };
+import { createElement, updateElement } from "./dom";
+export { h, createElement, updateElement };

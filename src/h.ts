@@ -20,12 +20,14 @@ export interface VNode {
  */
 export default function h(
   type: keyof ElementTagNameMap,
-  attributes: Attributes = {},
+  attributes: Attributes,
   ...children: VNodeType[]
 ): VNode {
+  // JSX変換ツール(Babel, TypeScript)は属性が指定されていない場合は属性にnullをセットする
+  // -> nullの場合は空オブジェクトとする
   return {
     type,
-    attributes,
+    attributes: attributes || {},
     children
   };
 }

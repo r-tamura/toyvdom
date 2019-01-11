@@ -27,7 +27,7 @@ function createElement(node: VNodeType): HTMLElement | Text {
  */
 function updateElement(
   $parent: HTMLElement,
-  oldNode: VNodeType,
+  oldNode: VNodeType | null,
   newNode: VNodeType,
   index = 0
 ) {
@@ -60,7 +60,7 @@ function updateElement(
 }
 
 export const isVNode = (node: VNodeType): node is VNode =>
-  typeof node === "string" || typeof node === "number";
+  typeof node !== "string" && typeof node !== "number";
 
 const changed = (prev: VNodeType, next: VNodeType): Boolean => {
   // Note: Ignore attributes for now
