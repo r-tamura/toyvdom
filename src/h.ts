@@ -1,6 +1,6 @@
 export type VNodeType = VNode | Number | Text;
 export type Attributes = { [s: string]: AttrValue };
-export type AttrValue = string | boolean | Function;
+export type AttrValue = string | boolean | EventListener;
 export type AttrName = string;
 /**
  * Virtual DOM

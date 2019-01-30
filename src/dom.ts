@@ -11,7 +11,7 @@ function createElement(node: VNodeType): HTMLElement | Text {
     return document.createTextNode(node.toString());
   }
   const $element = document.createElement(node.type);
-  setProps($element, node.attributes);
+  setAttributes($element, node.attributes);
   for (const child of node.children) {
     $element.appendChild(createElement(child));
   }
@@ -45,13 +45,15 @@ function updateElement(
     return;
   }
 
-  if (changed(oldNode, newNode)) {
+  // If there is any changes, replace old node with new node.
+  if (changed(oldNode, newNode) !== ChangedType.None) {
     $parent.replaceChild(createElement(newNode), $target);
     return;
   }
 
+  // If both of two is a VNode, we have to patch their children.
   if (isVNode(oldNode) && isVNode(newNode)) {
-    updateProps($target, newNode.attributes, oldNode.attributes);
+    updateAttributes($target, newNode.attributes, oldNode.attributes);
     const length = Math.max(oldNode.children.length, newNode.children.length);
     for (let i = 0; i < length; i++) {
       updateElement($target, oldNode.children[i], newNode.children[i], i);
@@ -62,22 +64,52 @@ function updateElement(
 export const isVNode = (node: VNodeType): node is VNode =>
   typeof node !== "string" && typeof node !== "number";
 
-const changed = (prev: VNodeType, next: VNodeType): Boolean => {
+enum ChangedType {
+  None = 0,
+  Node,
+  Attr
+}
+const changed = (prev: VNodeType, next: VNodeType): ChangedType => {
   // Note: Ignore attributes for now
-  return (
-    typeof prev !== typeof next ||
-    (typeof prev === "string" && prev !== next) ||
-    (prev as VNode).type !== (next as VNode).type
-  );
+
+  if (typeof prev !== typeof next) {
+    return ChangedType.Node;
+  }
+
+  if (typeof prev === "string") {
+    if (prev !== next) {
+      return ChangedType.Node;
+    }
+  }
+
+  if (isVNode(prev) && isVNode(next)) {
+    if (prev.type !== next.type) {
+      return ChangedType.Node;
+    }
+
+    if (JSON.stringify(prev.attributes) !== JSON.stringify(next.attributes)) {
+      return ChangedType.Attr;
+    }
+  }
+
+  return ChangedType.None;
 };
 
-const setProp = ($target: HTMLElement, name: AttrName, value: AttrValue) => {
+const setAttribute = (
+  $target: HTMLElement,
+  name: AttrName,
+  value: AttrValue
+) => {
   // Specital attributes in virtual DOM
   switch (typeof value) {
     case "boolean":
-      setBooleanProp($target, name, value);
+      setBooleanAttribute($target, name, value);
       break;
     case "function":
+      // イベント属性名の場合のみイベントとして追加
+      if (isEventProp(name)) {
+        $target.addEventListener(extractEventName(name), value);
+      }
       break;
     case "string":
       //  className -> class
@@ -86,27 +118,25 @@ const setProp = ($target: HTMLElement, name: AttrName, value: AttrValue) => {
       } else {
         $target.setAttribute(name, value);
       }
+      break;
   }
 };
 
-const setBooleanProp = ($target: HTMLElement, name: string, value: boolean) => {
+const setBooleanAttribute = (
+  $target: HTMLElement,
+  name: string,
+  value: boolean
+) => {
   $target.setAttribute(name, value.toString());
 };
 
-const setProps = ($target: HTMLElement, props: Attributes) => {
+const setAttributes = ($target: HTMLElement, props: Attributes) => {
   for (const [name, value] of Object.entries(props)) {
-    switch (typeof value) {
-      case "string":
-      case "boolean":
-        setProp($target, name, value);
-        break;
-      case "function":
-        break;
-    }
+    setAttribute($target, name, value);
   }
 };
 
-const removeProp = ($target: HTMLElement, name: AttrName) => {
+const removeAttribute = ($target: HTMLElement, name: AttrName) => {
   if (name === "className") {
     $target.removeAttribute("class");
   } else {
@@ -114,22 +144,22 @@ const removeProp = ($target: HTMLElement, name: AttrName) => {
   }
 };
 
-const updateProp = (
+const updateAttribute = (
   $target: HTMLElement,
   name: AttrName,
   oldValue: AttrValue,
   newValue: AttrValue
 ) => {
   if (!newValue) {
-    removeProp($target, name);
+    removeAttribute($target, name);
     return;
   }
   if (newValue !== oldValue) {
-    setProp($target, name, newValue);
+    setAttribute($target, name, newValue);
   }
 };
 
-const updateProps = (
+const updateAttributes = (
   $target: HTMLElement,
   newProps: Attributes,
   oldProps: Attributes
@@ -137,6 +167,10 @@ const updateProps = (
   // newPropsとoldPropsの属性名の和集合
   const propnames = Object.keys({ ...newProps, ...oldProps });
   for (const name of propnames) {
-    updateProp($target, name, newProps[name], oldProps[name]);
+    updateAttribute($target, name, newProps[name], oldProps[name]);
   }
 };
+
+// 属性名がonで始まる属性はイベント属性とする
+const isEventProp = (name: AttrName) => name.slice(0, 2) === "on";
+const extractEventName = (name: AttrName) => name.slice(2).toLowerCase();

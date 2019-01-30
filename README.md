@@ -10,6 +10,9 @@ yarn build
 yarn watch
 ```
 
+# Todos
+ - [ ] Implement イベントリスナーの再登録
+
 # References
 
  - [How to write your own Virtual DOM](https://medium.com/@deathmood/how-to-write-your-own-virtual-dom-ee74acc13060)
