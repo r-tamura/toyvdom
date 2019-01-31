@@ -31,7 +31,7 @@ export class App<State, Actions> {
     this.state = params.state;
     this.actions = this.createDispatchers(params.actions);
     this.newNode = { type: "div", attributes: {}, children: [] };
-    this.recreateVDom();
+    this.apllyToDOM();
   }
 
   private createDispatchers(actions: ActionTree<State>) {
@@ -40,7 +40,7 @@ export class App<State, Actions> {
       const action = actions[key];
       dispatchers[key] = (state: State, ...data: any) => {
         Object.assign(this.state, action(state, ...data));
-        this.recreateVDom();
+        this.apllyToDOM();
       };
     }
     return dispatchers;
@@ -51,7 +51,7 @@ export class App<State, Actions> {
    *  - 新しい仮想DOMの生成
    *  - DOMへの反映
    */
-  private recreateVDom() {
+  private apllyToDOM() {
     this.newNode = this.view(this.state, this.actions);
     this.scheduleRender();
   }

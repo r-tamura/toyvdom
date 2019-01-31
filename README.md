@@ -11,7 +11,53 @@ yarn watch
 ```
 
 # Todos
- - [ ] Implement イベントリスナーの再登録
+ - [ ] Implement reassignment of a event listener
+ - [ ] Implement improvement on performance of diffing algorithm
+
+# Example
+ - Counter
+```html
+<html>
+  <head>
+    <meta charset="utf8">
+    <title>TODO - Toy Virtual DOM Lib demo</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="main.js"></script>
+  </body>
+</html>
+```
+
+```tsx
+import { h, App, View, ActionTree } from "toyvdom";
+
+const state = {
+  counter: 0
+};
+
+const actions: ActionTree<State> = {
+  increment: state => ({ counter: state.counter + 1 }),
+  decrement: state => ({ counter: state.counter - 1 })
+};
+
+const view: View<State, Actions> = (state, actions) => (
+  <div>
+    <h1>{state.counter}</h1>
+    <button onClick={() => actions.increment(state)}>+</button>
+    <button onClick={actions.decrement}>-</button>
+  </div>
+);
+
+type State = typeof state;
+type Actions = typeof actions;
+
+const $root = document.getElementById("app");
+
+if ($root) {
+  new App<State, Actions>({ element: $root, state, view, actions });
+}
+```
 
 # References
 

@@ -35,7 +35,7 @@ function updateElement(
   index = 0
 ) {
   // If there is no old node, append new node to its parent node
-  if (!oldNode) {
+  if (isNull(oldNode)) {
     $parent.appendChild(createElement(newNode));
     return;
   }
@@ -43,7 +43,7 @@ function updateElement(
   const $target = $parent.childNodes[index] as HTMLElement;
 
   // If there is no new node, delete old one.
-  if (!newNode) {
+  if (isNull(newNode)) {
     $parent.removeChild($target);
     return;
   }
@@ -63,6 +63,8 @@ function updateElement(
     }
   }
 }
+
+const isNull = (v: any): v is null => typeof v === null;
 
 export const isVNode = (node: VNodeType): node is VNode =>
   typeof node !== "string" && typeof node !== "number";
