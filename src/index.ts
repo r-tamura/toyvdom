@@ -1,3 +1,5 @@
 import h from "./h";
-import { createElement, updateElement } from "./dom";
-export { h, createElement, updateElement };
+export { h };
+export * from "./dom";
+export * from "./action";
+export * from "./app";

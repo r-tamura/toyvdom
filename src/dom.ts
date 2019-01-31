@@ -1,6 +1,9 @@
 import { VNode, VNodeType, Attributes, AttrValue, AttrName } from "./h";
 
 export { createElement, updateElement };
+export interface View<State, Actions> {
+  (state: State, actions: Actions): VNode;
+}
 
 /**
  * Create a real DOM element from a virtual DOM node
@@ -46,7 +49,7 @@ function updateElement(
   }
 
   // If there is any changes, replace old node with new node.
-  if (changed(oldNode, newNode) !== ChangedType.None) {
+  if (diff(oldNode, newNode) !== ChangedType.None) {
     $parent.replaceChild(createElement(newNode), $target);
     return;
   }
@@ -69,14 +72,15 @@ enum ChangedType {
   Node,
   Attr
 }
-const changed = (prev: VNodeType, next: VNodeType): ChangedType => {
+const diff = (prev: VNodeType, next: VNodeType): ChangedType => {
+  // Todo: シンプルな差分比較アルゴリズム 改善する
   // Note: Ignore attributes for now
 
   if (typeof prev !== typeof next) {
     return ChangedType.Node;
   }
 
-  if (typeof prev === "string") {
+  if (!isVNode(prev)) {
     if (prev !== next) {
       return ChangedType.Node;
     }
@@ -154,7 +158,8 @@ const updateAttribute = (
     removeAttribute($target, name);
     return;
   }
-  if (newValue !== oldValue) {
+  // TODO: イベントリスナーも更新できるようにする
+  if (!isEventProp(name) && newValue !== oldValue) {
     setAttribute($target, name, newValue);
   }
 };
